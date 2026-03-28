@@ -1,0 +1,47 @@
+services:
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: www-nginx
+    volumes:
+       - ../code:/data/application.local
+    ports:
+      - "80:80"
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - www-network
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    image: php
+    container_name: www-php
+    volumes:
+       - ../code:/data/application.local
+       - ./php/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - www-network
+
+  mysql:
+    image: mysql:latest
+    container_name: www-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./mysql/dbdata:/var/lib/mysql
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    networks:
+      - www-network
+
+networks:
+  www-network:
+    driver: bridge
